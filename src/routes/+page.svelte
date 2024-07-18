@@ -1,43 +1,46 @@
 <script>
-	let people = [
-		{ name: 'yoshi', beltColor: 'black', age: 25, id: 1 },
-		{ name: 'mario', beltColor: 'orange', age: 45, id: 2 },
-		{ name: 'luigi', beltColor: 'brown', age: 35, id: 3 }
-	];
+	import Header from '../components/Header.svelte';
+	import Footer from '../components/Footer.svelte';
+	import Choice from '../components/Choice.svelte';
+	import CurrentPolls from '../components/CurrentPolls.svelte';
+	import NewPollForm from '../components/NewPollForm.svelte';
 
-	const handleClick = (id) => {
-		people = people.filter((person) => person.id != id);
+	let activeChoice;
+	let polls = [];
+	const addPoll = (e) => {
+		const poll = e.detail;
+		polls = [...polls, poll];
+		console.log('Create poll : ', poll);
 	};
-
-	let num = 5;
+	const deletePoll = (e) => {
+		const id = e.detail;
+		polls = polls.filter((poll) => poll.id != id);
+	};
+	const votePoll = (e) => {
+		const { option, id } = e.detail;
+		let tempPolls = polls;
+		let votedPoll = tempPolls.find((poll) => poll.id == id);
+		console.log(votedPoll);
+		if (option == votedPoll.firstChoice) {
+			votedPoll.firstChoiceVotes++;
+		} else if (option == votedPoll.secondChoice) {
+			votedPoll.secondChoiceVotes++;
+		}
+		polls = tempPolls;
+	};
 </script>
 
-{#if num > 20}
-	<p>Warning</p>
-{:else if num > 5}
-	<p>rawr</p>
-{:else}
-	<p>no</p>
-{/if}
-
-<main class="w-screen h-screen">
-	<div class="">
-		{#each people as person (person.id)}
-			<div class="w-fit h-fit p-2 m-2 bg-red-400">
-				<h1>{person.name}</h1>
-				<p>{person.age}</p>
-				<p>{person.beltColor}</p>
-				{#if person.beltColor === 'black'}
-					<p>Master</p>
-				{/if}
-				<button
-					on:click={() => {
-						handleClick(person.id);
-					}}>Delete</button
-				>
-			</div>
-		{:else}
-			<p>There are no people to show</p>
-		{/each}
-	</div>
+<main class="min-h-screen w-screen bg-slate-50">
+	<Header />
+	<Choice bind:activeChoice />
+	{#if activeChoice == 1}
+		<CurrentPolls {polls} on:deletePoll={deletePoll} on:votePoll={votePoll} />
+	{:else if activeChoice == 2}
+		<NewPollForm on:addPoll={addPoll} />
+	{:else}
+		<div class="flex w-full justify-center">
+			<h1 class="text-xl font-bold">Integer Error</h1>
+		</div>
+	{/if}
+	<Footer />
 </main>
